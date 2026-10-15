@@ -64,34 +64,17 @@ impl StdVector {
     }
 }
 
+// Constructor coverage: https://eel.is/c++draft/vector.overview
+// Allocator variants are excluded by the task instructions.
+// Deferred constructors (not proven inexpressible):
+// - Copy: needs an overload borrowing another wrapper and independent-copy tests.
+// - Move: needs ownership and moved-from-state tests; moving the Rust wrapper does
+//   not invoke the C++ move constructor.
+// - Initializer-list: needs a distinct input representation; the slice overload
+//   calls the iterator-pair constructor instead.
+// - C++23 from_range: needs a range bridge and a distinct tag or argument type.
+
 // cpp_build must see cpp! calls directly in the source, outside overload! expansion.
-// ### Constructor coverage
-//
-// Compared against the [C++ vector constructor declarations](https://eel.is/c++draft/vector.overview).
-// The default, count, count-and-value, and iterator-pair constructors are exercised
-// through Rust `new` overloads. Explicit allocator arguments, including
-// allocator-only and allocator-extended copy/move constructors, are excluded by the
-// contribution task's allocator-overload rule.
-//
-// The remaining constructors are deferred, not demonstrated to be inexpressible:
-// - Copy construction (`vector(const vector&)`) needs an overload borrowing another
-//   wrapper and tests showing an independent copy. It is outside this initial set of
-//   four constructors; `new(&StdVector)` is a possible extension.
-// - Move construction (`vector(vector&&)`) needs an explicit ownership mapping and
-//   tests for the moved-from wrapper. A Rust move of this wrapper only transfers its
-//   pointer and does not call the C++ move constructor. The existing forward-list
-//   example's mutable-reference approach is a possible extension to investigate.
-// - Initializer-list construction is not exercised by the slice overload: that helper
-//   calls the iterator-pair constructor. Rust has no direct `std::initializer_list`
-//   type; a distinct wrapper or fixed-arity overloads, as in the forward-list example,
-//   would need separate tests. Mapping it to the same slice signature would not let
-//   callers select between the two C++ constructors.
-// - C++23 `vector(std::from_range, range)` needs a range bridge and a distinct tag or
-//   argument type to distinguish it from the existing slice overload. It is deferred
-//   pending that design; the current slice test does not exercise this constructor.
-//
-// These scope choices require mentor review; this is not complete constructor coverage.
-//
 overload! {
     impl StdVector {
         /// Construct an empty vector.
