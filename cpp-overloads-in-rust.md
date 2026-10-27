@@ -1,6 +1,7 @@
+
 # C++ Overloads in Rust: Experimental Outcomes
 
-_**This document is an initial, partially reviewed draft**_
+***This document is an initial, partially reviewed draft***
 
 This table shows how well C++ standard library overloads can be represented in Rust.
 
@@ -9,25 +10,25 @@ overloading macro: they are not Rust language design decisions.
 
 See the Limitations section below the table for more details.
 
-_Key:_<br/>
+*Key:*<br/>
 ⛔ Conflicting Overloads<br/>
 🦀 Rust Compiler Limitations<br/>
 ⚙️ Overload Macro Limitations<br/>
 🌗 Partial Support or Poor Ergonomics<br/>
 ✅ Works in Rust<br/>
 ？ Needs Analysis<br/>
-_blank_ No C++ Overloads<br/>
+*blank* No C++ Overloads<br/>
 
 | C++ Standard Library Class | Constructors | Accessors | Modifiers  | Transforms |
 | :------------------------- | :----------- | :-------- | :--------- | :--------- |
-| _Free Functions_           | Constructors | Accessors | Modifiers  | Transforms |
-| TODO                       |              | ？        | ？         | ？         |
-| _Non-Template Classes_     | Constructors | Accessors | Modifiers  | Transforms |
-| TODO                       | ？           | ？        | ？         | ？         |
-| _Template Classes_         | Constructors | Accessors | Modifiers  | Transforms |
+| *Free Functions*           | Constructors | Accessors | Modifiers  | Transforms |
+| TODO                       |              | ？        |  ？        | ？         |
+| *Non-Template Classes*     | Constructors | Accessors | Modifiers  | Transforms |
+| TODO                       | ？           | ？        |  ？        | ？         |
+| *Template Classes*         | Constructors | Accessors | Modifiers  | Transforms |
 | [forward_list]             | ✅           | 🌗⚙️[^1]  | 🌗⚙️？[^2] | ✅         |
 | [vector]                   | 🌗⛔[^3]     | ⚙️？[^4]  | 🌗？[^5]   | ？[^6]     |
-| TODO                       | ？           | ？        | ？         | ？         |
+| TODO                       | ？           | ？        |  ？        | ？         |
 
 Constructors: Create an instance of the class, called as `Class::Class(...)`<br/>
 Accessors: Get information about the class, called as `instance->get(...)`<br/>
@@ -40,7 +41,6 @@ Transforms: Rearrange the items in a list class, called as `instance->sort(...)`
 [vector-diagnostics]: cpp-overload-test/examples/stdcpp-vector.stderr
 
 [^1]: Rust and C++ iterators have different semantics, using adapter types is an ergonomic workaround.
-
 [^2]: `insert_after` and `splice_after` still need to be analysed.
 
 [^3]:
@@ -93,18 +93,10 @@ Some overloads are confusing or hard to use, so we might not want to represent t
 - in generic list overloads, `new(count: usize)` and `new(item: T)` are easily confused if `T` is
   an integer (and they conflict if `T` is `usize`, which means it can't be fully generic)
   - this can be resolved by skipping overloads for initializer lists
-  - the two-element form `new(a: T, b: T)` also conflicts with
-    `new(count: usize, value: T)` when `T` is `usize`
-  - a distinct initializer-list wrapper or separate constructor names can distinguish
-    these cases; explicit casts cannot distinguish identical signatures
 - `&dyn Iterator` overloads require a type cast
   - this could be resolved with improvements to the macro, or with an iterator adapter type
 
 Type inference doesn't work on some overloads: this is likely a macro or compiler experiment limitation.
-
-The vector experiment uses checked indices for `erase` and buffers Rust iterator input into
-a C++ span for `from_range`. These adapters preserve useful behavior but do not exercise
-passing C++ iterator wrappers or a single-pass C++ input range through the Rust interface.
 
 Some C++ overloads [use a tag argument][cpp-tag-arg] for [overload disambiguation][cpp-tag-type],
 a strategy which could be adopted in Rust APIs. But in some cases, the Rust overload
@@ -112,7 +104,7 @@ a strategy which could be adopted in Rust APIs. But in some cases, the Rust over
 
 [cpp-tag-arg]: https://en.cppreference.com/cpp/container/forward_list/forward_list
 [cpp-tag-type]: https://en.cppreference.com/cpp/ranges/from_range
-[rust-no-disambig]: https://github.com/rustfoundation/overloading-macros/blob/52c3f3aa5e4e6f11d71d2d832fce733f00d0b087/cpp-overload-test/src/stdcpp/forward_list.rs#L89
+[rust-no-disambig]:  https://github.com/rustfoundation/overloading-macros/blob/52c3f3aa5e4e6f11d71d2d832fce733f00d0b087/cpp-overload-test/src/stdcpp/forward_list.rs#L89
 
 ### Scope
 
@@ -131,10 +123,8 @@ These overloads have no equivalent in Rust:
 - assignment functions, assignment operators, and `swap`: there is no "type move method" in Rust
   (it uses `memcpy` for assignment/swaps)
 - legacy iterator pointer-like methods for various positions (`before_begin`/`begin`/`end`)
-
-Rust has no direct equivalent to C++ initializer-list parameters and braced-initialization
-syntax. The vector experiment tests fixed one-, two-, and three-element constructor adapters
-and documents their overload conflicts; it does not provide general initializer-list support.
+- initializer list methods: these are also a common source of overload conflicts for C++ templated
+  lists
 
 #### Equivalences & Supersets
 

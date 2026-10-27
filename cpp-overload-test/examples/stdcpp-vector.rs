@@ -16,6 +16,13 @@
 //! Its single dispatch method must have one receiver kind, so it cannot directly
 //! represent the const and non-const C++ accessor pair.
 //!
+//! ### Macro ergonomics
+//!
+//! FIXME: The `(usize, usize)` conflict diagnostic points at the overload block
+//! and displays the one-argument constructor instead of the conflicting two-argument
+//! constructors. Improve the macro's generated spans so the error identifies the
+//! count-and-value and two-element initializer-list overloads.
+//!
 //! ### Workarounds
 //!
 //! Give initializer-list input a distinct wrapper type, or use separate constructor
